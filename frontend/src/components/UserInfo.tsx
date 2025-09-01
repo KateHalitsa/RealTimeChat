@@ -4,6 +4,10 @@ import { HubConnectionBuilder } from '@microsoft/signalr';
 interface User {
     id: number;
     name: string;
+    connectionId: string;
+    entranceTime: string;
+    latestPingTime: string;
+    exitTime?: string | null;
 }
 
 const UserInfo: React.FC = () => {
@@ -38,12 +42,21 @@ const UserInfo: React.FC = () => {
 
     return (
         <div>
-            <ul>
+            <ul >
                 {users.map(user => (
-                    <li key={user.id}>
-                        {user.name}
+                    <li key={user.id} style={{ display: 'flex', alignItems: 'center' }}>
+                        <span
+                        className="w-3 h-3 rounded-full bg-green-500"
+                        title="Online"
+                        style={{ marginRight: '8px', flexShrink: 0 }}
+                    ></span>
+                        {user.name} — online с {new Date(user.entranceTime).toLocaleTimeString()}
+                        {user.exitTime && `, покинул в ${new Date(user.exitTime).toLocaleTimeString()}`}
+
                     </li>
+
                 ))}
+
             </ul>
         </div>
     );

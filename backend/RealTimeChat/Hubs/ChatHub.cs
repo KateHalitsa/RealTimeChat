@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using RealTimeChat.Models;
@@ -8,39 +9,43 @@ namespace RealTimeChat.Hubs;
 public interface IChatClient
 {
     public Task ReceiveMessage(string userName, string message);
-	Task ReceiveUsers(List<User> users);
+	public Task ReceiveUsers(List<User> users);
 }
 
-public class User
-{
-	public int id { get; set; }
-	public String name { get; set; }
-
-}
 
 public class ChatHub : Hub<IChatClient>
 {
     private readonly IDistributedCache _cache;
+	private readonly IUserList _list;
 
-    public ChatHub(IDistributedCache cache)
+	public ChatHub(IDistributedCache cache,IUserList list)
     {
         _cache = cache;
-    }
-
-	private static List<User> _users = new List<User>
-	{
-		new User { id = 1, name = "Alice" },
-		new User { id = 2, name = "Bob" },
-		new User { id = 3, name = "Charlie" }
-	};
+		_list = list;
+	}
 
 	public async Task SendUserList()
 	{
-		await Clients.All.ReceiveUsers(_users);
+		await Clients.All.ReceiveUsers(_list.GetUsers().ToList());
+	}
+	public override Task OnConnectedAsync()
+	{
+
+
+		return Task.CompletedTask;
 	}
 	public async Task JoinChat(UserConnection connection)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
+	{
+		/*var user = _list.GetUser(Context.ConnectionId);
+		if (user != null)
+		{
+			user.Name = connection.UserName;
+		}*/
+
+		_list.CreateUser(Context.ConnectionId, connection.UserName);
+		Heartbeat();
+
+		await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
 
         var stringConnection = JsonSerializer.Serialize(connection);
 
@@ -54,32 +59,54 @@ public class ChatHub : Hub<IChatClient>
     public async Task SendMessage(string message)
     {
         var stringConnection = await _cache.GetAsync(Context.ConnectionId);
+		if (stringConnection != null)
+		{
+			var connection = JsonSerializer.Deserialize<UserConnection>(stringConnection);
 
-        var connection = JsonSerializer.Deserialize<UserConnection>(stringConnection);
-
-        if (connection is not null)
-        {
-            await Clients
-                .Group(connection.ChatRoom)
-                .ReceiveMessage(connection.UserName, message);
-        }
+			if (connection is not null)
+			{
+				await Clients
+					.Group(connection.ChatRoom)
+					.ReceiveMessage(connection.UserName, message);
+			}
+		}
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var stringConnection = await _cache.GetAsync(Context.ConnectionId);
-        var connection = JsonSerializer.Deserialize<UserConnection>(stringConnection);
+		_list.RemoveUser(Context.ConnectionId);
+		var stringConnection = await _cache.GetAsync(Context.ConnectionId);
+		if (stringConnection != null)
+		{
+			var connection = JsonSerializer.Deserialize<UserConnection>(stringConnection);
 
-        if (connection is not null)
-        {
-            await _cache.RemoveAsync(Context.ConnectionId);
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, connection.ChatRoom);
+			if (connection is not null)
+			{
+				await _cache.RemoveAsync(Context.ConnectionId);
+				await Groups.RemoveFromGroupAsync(Context.ConnectionId, connection.ChatRoom);
 
-            await Clients
-                .Group(connection.ChatRoom)
-                .ReceiveMessage("Admin", $"{connection.UserName} покинул чат");
-        }
-
+				await Clients
+					.Group(connection.ChatRoom)
+					.ReceiveMessage("Admin", $"{connection.UserName} покинул чат");
+			}
+		}
+	
         await base.OnDisconnectedAsync(exception);
     }
+
+	private void Heartbeat()
+	{
+		var heartbeat = Context.Features.Get<IConnectionHeartbeatFeature>();
+		if (heartbeat == null) return;
+
+		heartbeat.OnHeartbeat(state =>
+		{
+			var (context, connectionId) = ((HttpContext, string))state;
+			var clientList = context.RequestServices.GetService<IUserList>();
+			if (clientList != null)
+			{
+				clientList.LatestPing(connectionId);
+			}
+		}, (Context.GetHttpContext(), Context.ConnectionId));
+	}
 }

@@ -18,8 +18,12 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-
-builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserList, UserList>();
+builder.Services.AddSignalR(hubOptions =>
+{
+	hubOptions.EnableDetailedErrors = true;
+	hubOptions.KeepAliveInterval = TimeSpan.FromMinutes(10);
+});
 builder.Services.AddStackExchangeRedisCache(option =>
 {
 	option.Configuration = builder.Configuration["redis"];
