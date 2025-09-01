@@ -8,6 +8,14 @@ namespace RealTimeChat.Hubs;
 public interface IChatClient
 {
     public Task ReceiveMessage(string userName, string message);
+	Task ReceiveUsers(List<User> users);
+}
+
+public class User
+{
+	public int id { get; set; }
+	public String name { get; set; }
+
 }
 
 public class ChatHub : Hub<IChatClient>
@@ -19,7 +27,18 @@ public class ChatHub : Hub<IChatClient>
         _cache = cache;
     }
 
-    public async Task JoinChat(UserConnection connection)
+	private static List<User> _users = new List<User>
+	{
+		new User { id = 1, name = "Alice" },
+		new User { id = 2, name = "Bob" },
+		new User { id = 3, name = "Charlie" }
+	};
+
+	public async Task SendUserList()
+	{
+		await Clients.All.ReceiveUsers(_users);
+	}
+	public async Task JoinChat(UserConnection connection)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
 
