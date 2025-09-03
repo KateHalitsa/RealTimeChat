@@ -1,14 +1,7 @@
 import { Button, CloseButton, Heading, Input } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import { Message } from "./Message";
+import {Message, MessageInfo} from "./Message";
 import UserInfo, {getCurrentUserName, User} from "./UserInfo";
-
-
-interface MessageInfo {
-	userName: string;
-	message: string;
-	// добавьте другие поля, если есть
-}
 
 interface ChatProps {
 	messages: MessageInfo[];

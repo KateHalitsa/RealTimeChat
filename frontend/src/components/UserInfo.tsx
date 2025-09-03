@@ -23,7 +23,6 @@ export function clearCurrentUserName()
 }
 
 export interface User {
-    id: number;
     name: string;
     connectionId: string;
     entranceTime: string;

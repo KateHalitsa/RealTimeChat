@@ -19,7 +19,10 @@ const App: React.FC = () => {
 			.build();
 
 		newConnection.on("ReceiveMessage", (userName: string, message: string) => {
-			setMessages((messages) => [...messages, { userName, message }]);
+			const time = new Date();
+			setMessages((messages) => {
+				return [...messages, {userName, message, time}];
+			});
 		});
 
 		newConnection.on('ReceiveUsers', (users: User[]) => {
