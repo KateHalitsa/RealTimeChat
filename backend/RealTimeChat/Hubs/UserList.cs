@@ -9,7 +9,9 @@ namespace RealTimeChat.Hubs
 		void LatestPing(string connectionId);
 
 		User GetUser(string connectionId);
+		User GetUserByName(string name);
 
+		void DeleteUserFromList(string connectionId);
 		IEnumerable<User> GetUsers();
 	}
 	public class UserList: IUserList
@@ -56,6 +58,15 @@ namespace RealTimeChat.Hubs
 			{
 				return null;
 			}
+		}
+		public User GetUserByName(string name)
+		{
+			return _users.Values.FirstOrDefault(user => user.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+		}
+
+		public void DeleteUserFromList(string connectionId)
+		{
+			_users.TryRemove(connectionId, out _);
 		}
 	}
 }

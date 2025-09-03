@@ -1,7 +1,7 @@
 import { Button, CloseButton, Heading, Input } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { Message } from "./Message";
-import UserInfo, {User} from "./UserInfo";
+import UserInfo, {getCurrentUserName, User} from "./UserInfo";
 
 
 interface MessageInfo {
@@ -41,7 +41,7 @@ export const Chat: React.FC<ChatProps> = ({
 		<div className=" flex gap-4 p-2 bg-gray-100 rounded shadow-lg max-w-1xl mx-auto">
 			{/* Боковая панель Пользователи слева */}
 			<div className="w-1/4 bg-white p-4 rounded shadow-md">
-				<Heading size="sm">Users</Heading>
+				<Heading size="lg">Users</Heading>
 				<UserInfo users={users}/>
 			</div>
 
@@ -49,7 +49,12 @@ export const Chat: React.FC<ChatProps> = ({
 			<div className="w-3/4 bg-white p-8 rounded shadow-lg flex flex-col">
 				<div className="flex flex-row justify-between mb-5">
 					<Heading size="lg">{chatRoom}</Heading>
-					<CloseButton onClick={closeChat} />
+					<div className="flex items-center">
+						<Heading size="lg" className="mr-2 text-left">
+							{getCurrentUserName()}
+						</Heading>
+						<CloseButton onClick={closeChat} />
+					</div>
 				</div>
 
 				<div className="flex flex-col overflow-auto scroll-smooth h-96 gap-3 pb-3">

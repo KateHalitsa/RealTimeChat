@@ -10,7 +10,7 @@ const App: React.FC = () => {
 	const [messages, setMessages] = useState<MessageInfo[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
 	const [chatRoom, setChatRoom] = useState<string>("");
-
+	const [error, setError] = useState<string | null>(null);
 	const joinChat = async (userName: string, chatRoom: string) => {
 
 		var newConnection: HubConnection | null = new HubConnectionBuilder()
@@ -25,8 +25,16 @@ const App: React.FC = () => {
 		newConnection.on('ReceiveUsers', (users: User[]) => {
 			setUsers(users); // Обновляем состояние пользователей
 		});
-
+		newConnection.onclose(error => {
+			if (error) {
+				console.error('Connection closed with error:', error);
+				setError(error.message);
+			} else {
+				console.log('Connection closed');
+			}
+		});
 		try {
+
 			await newConnection.start();
 			await newConnection.invoke("JoinChat", { userName, chatRoom });
 			console.log(`JoinChat ${userName}`)
@@ -34,8 +42,11 @@ const App: React.FC = () => {
 			setConnection(newConnection);
 			setChatRoom(chatRoom);
 			setCurrentUserName(userName);
-		} catch (error) {
-			console.error(error);
+			setError(null);  // Очистить ошибку, если соединение успешно
+		} catch (error: any) {
+			console.error("Ошибка при подключении:", error);
+			// error.message содержит текст HubException
+			setError(error.message || String(error));
 		}
 	};
 
@@ -92,7 +103,7 @@ const App: React.FC = () => {
 						chatRoom={chatRoom}
 					/>
 				) : (
-					<WaitingRoom joinChat={joinChat} />
+					<WaitingRoom joinChat={joinChat} error={error}/>
 			)}
 		</div>
 	);

@@ -59,7 +59,7 @@ const UserInfo: React.FC<UserInfoProps> = ({users}) => {
                             title={getStatusColor(user.exitTime) === 'bg-green-500' ? 'Online' : 'Offline'}
                             style={{ marginRight: '8px', flexShrink: 0 }}
                         ></span>
-                        {user.connectionId}<br/>
+                      {user.connectionId}<br/>
                         {user.name} — online с {new Date(user.entranceTime).toLocaleTimeString()}
                         {user.exitTime && `, покинул в ${new Date(user.exitTime).toLocaleTimeString()}`}
 

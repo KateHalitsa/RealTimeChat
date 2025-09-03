@@ -3,9 +3,10 @@ import { useState, FormEvent } from "react";
 
 interface WaitingRoomProps {
 	joinChat: (userName: string, chatRoom: string) => void;
+	error?: string | null;  // добавили
 }
 
-export const WaitingRoom: React.FC<WaitingRoomProps> = ({ joinChat }) => {
+export const WaitingRoom: React.FC<WaitingRoomProps> = ({ joinChat, error }) => {
 	const [userName, setUserName] = useState<string>("");
 	const [chatRoom, setChatRoom] = useState<string>("");
 
@@ -20,6 +21,11 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({ joinChat }) => {
 			className="max-w-sm w-full bg-white p-8 rounded shadow-lg"
 		>
 			<Heading size="lg">Онлайн чат</Heading>
+			{error &&
+				<div className="mb-4 text-red-600 font-semibold">
+					Ошибка: {error}
+				</div>
+			}
 			<div className="mb-4">
 				<Text fontSize={"sm"}>Имя пользователя</Text>
 				<Input

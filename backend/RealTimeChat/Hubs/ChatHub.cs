@@ -15,12 +15,10 @@ public interface IChatClient
 
 public class ChatHub : Hub<IChatClient>
 {
-    private readonly IDistributedCache _cache;
 	private readonly IUserList _list;
-
-	public ChatHub(IDistributedCache cache,IUserList list)
+	
+	public ChatHub(IUserList list)
     {
-        _cache = cache;
 		_list = list;
 	}
 
@@ -36,11 +34,30 @@ public class ChatHub : Hub<IChatClient>
 	}
 	public async Task JoinChat(UserConnection connection)
 	{
-		/*var user = _list.GetUser(Context.ConnectionId);
+		var user=_list.GetUserByName(connection.UserName);
 		if (user != null)
 		{
-			user.Name = connection.UserName;
-		}*/
+			//если юзер закрыт то удалим его из списка по conectionId
+			if (user.ExitTime != default(DateTime))
+			{
+				_list.DeleteUserFromList(user.ConnectionId);
+			}
+			else // если юзер не закрыт
+			{
+				if (Context.ConnectionId != user.ConnectionId)
+				{
+					// Разрываем соединение.
+					Context.Abort();
+
+					// Выбрасываем исключение, если нужно
+					throw new HubException($"Active user '{connection.UserName}' был принудительно отключен.");
+				}
+				else {
+					return; // наш юзер с нашим ConnectionId: дополнительные действия не нужны
+				}
+			}
+
+		}
 
 		_list.CreateUser(Context.ConnectionId, connection.UserName);
 		Heartbeat();
@@ -49,49 +66,43 @@ public class ChatHub : Hub<IChatClient>
 
         var stringConnection = JsonSerializer.Serialize(connection);
 
-        await _cache.SetStringAsync(Context.ConnectionId, stringConnection);
-
         await Clients
             .Group(connection.ChatRoom)
             .ReceiveMessage("Admin", $"{connection.UserName} присоединился к чату");
-    }
+
+		await SendUserList();
+
+	}
 
     public async Task SendMessage(string message)
     {
-        var stringConnection = await _cache.GetAsync(Context.ConnectionId);
-		if (stringConnection != null)
-		{
-			var connection = JsonSerializer.Deserialize<UserConnection>(stringConnection);
 
-			if (connection is not null)
-			{
-				await Clients
-					.Group(connection.ChatRoom)
-					.ReceiveMessage(connection.UserName, message);
-			}
+		var user = _list.GetUser(Context.ConnectionId);
+		if (user != null)
+		{
+			await Clients
+				.Group("mi"/*connection.ChatRoom*/)
+				.ReceiveMessage(user.Name/*connection.UserName*/, message);
 		}
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
 		_list.RemoveUser(Context.ConnectionId);
-		var stringConnection = await _cache.GetAsync(Context.ConnectionId);
-		if (stringConnection != null)
+
+		var user = _list.GetUser(Context.ConnectionId);
+		if (user != null)
 		{
-			var connection = JsonSerializer.Deserialize<UserConnection>(stringConnection);
+			await Groups.RemoveFromGroupAsync(Context.ConnectionId, "mi"/*connection.ChatRoom*/);
 
-			if (connection is not null)
-			{
-				await _cache.RemoveAsync(Context.ConnectionId);
-				await Groups.RemoveFromGroupAsync(Context.ConnectionId, connection.ChatRoom);
-
-				await Clients
-					.Group(connection.ChatRoom)
-					.ReceiveMessage("Admin", $"{connection.UserName} покинул чат");
-			}
+			await Clients
+				.Group("mi"/*connection.ChatRoom*/)
+				.ReceiveMessage("Admin", $"{user.Name} покинул чат");
 		}
-	
-        await base.OnDisconnectedAsync(exception);
+
+		await SendUserList();
+
+		await base.OnDisconnectedAsync(exception);
     }
 
 	private void Heartbeat()
