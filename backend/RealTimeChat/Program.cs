@@ -2,12 +2,6 @@ using RealTimeChat.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    var connection = builder.Configuration.GetConnectionString("Redis");
-    options.Configuration = connection;
-});
-
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -19,15 +13,13 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddSingleton<IUserList, UserList>();
-builder.Services.AddSignalR(hubOptions =>
+builder.Services.AddSignalR(); /*(hubOptions =>
 {
 	hubOptions.EnableDetailedErrors = true;
 	hubOptions.KeepAliveInterval = TimeSpan.FromMinutes(10);
-});
-builder.Services.AddStackExchangeRedisCache(option =>
-{
-	option.Configuration = builder.Configuration["redis"];
-});
+.
+});*/
+
 
 var app = builder.Build();
 

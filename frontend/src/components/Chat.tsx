@@ -1,7 +1,7 @@
 import { Button, CloseButton, Heading, Input } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { Message } from "./Message";
-import UserInfo from "./UserInfo";
+import UserInfo, {User} from "./UserInfo";
 
 
 interface MessageInfo {
@@ -12,6 +12,7 @@ interface MessageInfo {
 
 interface ChatProps {
 	messages: MessageInfo[];
+	users: User[];
 	chatRoom: string;
 	sendMessage: (message: string) => void;
 	closeChat: () => void;
@@ -19,6 +20,7 @@ interface ChatProps {
 
 export const Chat: React.FC<ChatProps> = ({
 											  messages,
+											  users,
 											  chatRoom,
 											  sendMessage,
 											  closeChat,
@@ -40,7 +42,7 @@ export const Chat: React.FC<ChatProps> = ({
 			{/* Боковая панель Пользователи слева */}
 			<div className="w-1/4 bg-white p-4 rounded shadow-md">
 				<Heading size="sm">Users</Heading>
-				<UserInfo/>
+				<UserInfo users={users}/>
 			</div>
 
 			{/* Основной чат справа */}

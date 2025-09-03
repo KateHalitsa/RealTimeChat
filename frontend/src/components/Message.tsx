@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-interface MessageInfo {
+export interface MessageInfo {
 	userName: string;
 	message: string;
 }
