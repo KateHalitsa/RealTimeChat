@@ -12,7 +12,8 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-builder.Services.AddSingleton<IUserList, UserList>();
+// builder.Services.AddSingleton<IUserList, UserList>();
+builder.Services.AddHostedService<HeartbeatMonitorService>();
 builder.Services.AddSignalR(); /*(hubOptions =>
 {
 	hubOptions.EnableDetailedErrors = true;

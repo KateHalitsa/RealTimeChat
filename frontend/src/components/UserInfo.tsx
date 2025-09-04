@@ -27,7 +27,21 @@ export interface User {
     connectionId: string;
     entranceTime: string;
     latestPingTime: string;
-    exitTime?: string | null;
+    exitTime: string;
+}
+
+export function getExitTimeoutMin(user: User): string
+{
+   var exitDate = new Date(user.exitTime);
+   if(exitDate.getFullYear() < 1900){
+       return ""
+   }else{
+       var now = new Date();
+       const differenceInMilliseconds = Math.abs(now.getTime() - exitDate.getTime());
+       const diffMinutes = Math.ceil(differenceInMilliseconds / (1000 * 60));
+       return ` last seen ${diffMinutes} mins ago`;
+   }
+
 }
 
 interface UserInfoProps
@@ -58,10 +72,14 @@ const UserInfo: React.FC<UserInfoProps> = ({users}) => {
                             title={getStatusColor(user.exitTime) === 'bg-green-500' ? 'Online' : 'Offline'}
                             style={{ marginRight: '8px', flexShrink: 0 }}
                         ></span>
-                      {user.connectionId}<br/>
-                        {user.name} — online с {new Date(user.entranceTime).toLocaleTimeString()}
-                        {user.exitTime && `, покинул в ${new Date(user.exitTime).toLocaleTimeString()}`}
-
+                        {user.name + getExitTimeoutMin(user)}
+                        { /*
+                        <br/>
+                        {user.connectionId}<br/>
+                        online {new Date(user.entranceTime).toLocaleTimeString()}<br/>
+                        ping: {new Date(user.latestPingTime).toLocaleTimeString()}<br/>
+                        exit {new Date(user.exitTime).toLocaleTimeString()}
+                         */ }
                     </li>
 
                 ))}

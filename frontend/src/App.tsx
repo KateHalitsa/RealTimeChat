@@ -29,6 +29,7 @@ const App: React.FC = () => {
 		newConnection.on('ReceiveUsers', (users: User[]) => {
 			setUsers(users); // Обновляем состояние пользователей
 		});
+
 		newConnection.onclose(error => {
 			if (error) {
 				console.error('Connection closed with error:', error);
@@ -70,10 +71,23 @@ const App: React.FC = () => {
 	};
 
 	useEffect(() => {
+		if (!connection) return;
+
+		connection.on("ConnectionTimeout", (message: string) => {
+			alert(message);
+			closeChat();
+		});
+
+		return () => {
+			connection.off("ConnectionTimeout");
+		};
+	}, [connection]);
+
+	useEffect(() => {
 
 		if (loginStartedRef.current) return; // если уже стартовали — не запускаем снова
 		loginStartedRef.current = true;
-
+		
 		console.log("Компонент смонтирован");
 
 		var curUserName = getCurrentUserName();

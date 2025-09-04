@@ -9,18 +9,19 @@ namespace RealTimeChat.Hubs;
 public interface IChatClient
 {
     public Task ReceiveMessage(string userName, string message);
-	public Task ReceiveUsers(List<User> users);
+	public Task ReceiveUsers(List<User> users);	
 }
 
 
 public class ChatHub : Hub<IChatClient>
 {
-	private readonly IUserList _list;
+	private static readonly IUserList _list = new UserList();
+	private static DateTime _userListLastNotificationDate  = DateTime.Now;
 	
-	public ChatHub(IUserList list)
+	/*public ChatHub(IUserList list)
     {
 		_list = list;
-	}
+	}*/
 
 	public async Task SendUserList()
 	{
@@ -28,8 +29,6 @@ public class ChatHub : Hub<IChatClient>
 	}
 	public override Task OnConnectedAsync()
 	{
-
-
 		return Task.CompletedTask;
 	}
 	public async Task JoinChat(UserConnection connection)
@@ -78,9 +77,7 @@ public class ChatHub : Hub<IChatClient>
 		var user = _list.GetUser(Context.ConnectionId);
 		if (user != null)
 		{
-			await Clients
-				.All 
-				.ReceiveMessage(user.Name/*connection.UserName*/, message);
+			await Clients.All.ReceiveMessage(user.Name, message);
 		}
     }
 
@@ -109,11 +106,48 @@ public class ChatHub : Hub<IChatClient>
 		heartbeat.OnHeartbeat(state =>
 		{
 			var (context, connectionId) = ((HttpContext, string))state;
-			var clientList = context.RequestServices.GetService<IUserList>();
+			var clientList = _list;//context.RequestServices.GetService<IUserList>();
 			if (clientList != null)
 			{
 				clientList.LatestPing(connectionId);
+				Console.WriteLine($"ConnectionId = {connectionId},{DateTime.Now:dd.MM.yyyy HH:mm:ss}");
 			}
 		}, (Context.GetHttpContext(), Context.ConnectionId));
+	}
+
+	public static async Task CheckDeadConnections(IHubContext<ChatHub> hubContext)
+	{
+		var now = DateTime.Now;
+
+		foreach (var user in _list.GetUsers())
+		{
+			var connectionId = user.ConnectionId;
+			var lastHeartbeat = user.LatestPingTime;
+
+			// Если прошло больше 30 секунд с последнего heartbeat — отключаем клиента
+			if ((user.ExitTime == default(DateTime)) && ((now - lastHeartbeat).TotalSeconds > 30))
+			{
+				// Завершаем соединение
+				await hubContext.Clients.Client(connectionId).SendAsync("ConnectionTimeout", "Вы были отключены из-за неактивности.");
+
+				// Здесь можно прервать соединение с сервера (требует рефлексии или кастомного решения)
+				// Например, если у вас есть доступ к IHubContext, можно вызвать Abort через Middleware или др.
+
+				// Помечаем удаленным в списка и логируем
+				_list.RemoveUser(connectionId);
+				Console.WriteLine($"Connection {connectionId} отключен из-за отсутствия heartbeat.");
+			}
+
+			if ((now - lastHeartbeat).TotalMinutes > 10) {
+				_list.DeleteUserFromList(connectionId);
+			}
+		}
+
+		if ((now - _userListLastNotificationDate).TotalSeconds > 60) 
+		{
+			await hubContext.Clients.All.SendAsync("ReceiveUsers", _list.GetUsers().ToList());
+			_userListLastNotificationDate = DateTime.Now;
+		}
+			
 	}
 }
