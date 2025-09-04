@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import { WaitingRoom } from "./components/WaitingRoom";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import { Chat } from "./components/Chat";
@@ -11,6 +11,8 @@ const App: React.FC = () => {
 	const [users, setUsers] = useState<User[]>([]);
 	const [chatRoom, setChatRoom] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
+	const loginStartedRef = useRef(false); // флаг для предотвращения повторного запуска
+
 	const joinChat = async (userName: string, chatRoom: string) => {
 
 		var newConnection: HubConnection | null = new HubConnectionBuilder()
@@ -71,6 +73,10 @@ const App: React.FC = () => {
 	};
 
 	useEffect(() => {
+
+		if (loginStartedRef.current) return; // если уже стартовали — не запускаем снова
+		loginStartedRef.current = true;
+
 		console.log("Компонент смонтирован");
 
 		var curUserName = getCurrentUserName();
