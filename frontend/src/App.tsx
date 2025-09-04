@@ -9,11 +9,10 @@ const App: React.FC = () => {
 	const [connection, setConnection] = useState<HubConnection | null>(null);
 	const [messages, setMessages] = useState<MessageInfo[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
-	const [chatRoom, setChatRoom] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
 	const loginStartedRef = useRef(false); // флаг для предотвращения повторного запуска
 
-	const joinChat = async (userName: string, chatRoom: string) => {
+	const joinChat = async (userName: string) => {
 
 		var newConnection: HubConnection | null = new HubConnectionBuilder()
 			.withUrl("http://localhost:5022/chat")
@@ -41,11 +40,10 @@ const App: React.FC = () => {
 		try {
 
 			await newConnection.start();
-			await newConnection.invoke("JoinChat", { userName, chatRoom });
+			await newConnection.invoke("JoinChat", { userName });
 			console.log(`JoinChat ${userName}`)
 
 			setConnection(newConnection);
-			setChatRoom(chatRoom);
 			setCurrentUserName(userName);
 			setError(null);  // Очистить ошибку, если соединение успешно
 		} catch (error: any) {
@@ -68,7 +66,6 @@ const App: React.FC = () => {
 			setConnection( null);
 			setMessages([]);
 			setUsers([]);
-			setChatRoom("");
 		}
 	};
 
@@ -81,7 +78,7 @@ const App: React.FC = () => {
 
 		var curUserName = getCurrentUserName();
 		if ((!connection) && (curUserName != "")){
-			joinChat(curUserName, "mi");
+			joinChat(curUserName);
 		}
 
 		if (connection){
@@ -109,7 +106,7 @@ const App: React.FC = () => {
 						users={users}
 						sendMessage={sendMessage}
 						closeChat={closeChat}
-						chatRoom={chatRoom}
+
 					/>
 				) : (
 					<WaitingRoom joinChat={joinChat} error={error}/>

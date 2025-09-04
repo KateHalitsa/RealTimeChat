@@ -6,7 +6,6 @@ import UserInfo, {getCurrentUserName, User} from "./UserInfo";
 interface ChatProps {
 	messages: MessageInfo[];
 	users: User[];
-	chatRoom: string;
 	sendMessage: (message: string) => void;
 	closeChat: () => void;
 }
@@ -14,7 +13,6 @@ interface ChatProps {
 export const Chat: React.FC<ChatProps> = ({
 											  messages,
 											  users,
-											  chatRoom,
 											  sendMessage,
 											  closeChat,
 										  }) => {
@@ -41,7 +39,7 @@ export const Chat: React.FC<ChatProps> = ({
 			{/* Основной чат справа */}
 			<div className="w-3/4 bg-white p-8 rounded shadow-lg flex flex-col">
 				<div className="flex flex-row justify-between mb-5">
-					<Heading size="lg">{chatRoom}</Heading>
+					<Heading size="lg">My Chat</Heading>
 					<div className="flex items-center">
 						<Heading size="lg" className="mr-2 text-left">
 							{getCurrentUserName()}

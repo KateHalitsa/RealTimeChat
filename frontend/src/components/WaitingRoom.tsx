@@ -35,15 +35,7 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({ joinChat, error }) => 
 					onChange={(e) => setUserName(e.target.value)}
 				/>
 			</div>
-			<div className="mb-6">
-				<Text fontSize={"sm"}>Название чата</Text>
-				<Input
-					name="chatname"
-					placeholder="Введите название чата"
-					value={chatRoom}
-					onChange={(e) => setChatRoom(e.target.value)}
-				/>
-			</div>
+
 			<Button type="submit" colorScheme="blue">
 				Присоединиться
 			</Button>

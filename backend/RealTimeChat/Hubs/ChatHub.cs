@@ -62,12 +62,10 @@ public class ChatHub : Hub<IChatClient>
 		_list.CreateUser(Context.ConnectionId, connection.UserName);
 		Heartbeat();
 
-		await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
-
         var stringConnection = JsonSerializer.Serialize(connection);
 
         await Clients
-            .Group(connection.ChatRoom)
+			.All 
             .ReceiveMessage("Admin", $"{connection.UserName} присоединился к чату");
 
 		await SendUserList();
@@ -81,7 +79,7 @@ public class ChatHub : Hub<IChatClient>
 		if (user != null)
 		{
 			await Clients
-				.Group("mi"/*connection.ChatRoom*/)
+				.All 
 				.ReceiveMessage(user.Name/*connection.UserName*/, message);
 		}
     }
@@ -93,10 +91,8 @@ public class ChatHub : Hub<IChatClient>
 		var user = _list.GetUser(Context.ConnectionId);
 		if (user != null)
 		{
-			await Groups.RemoveFromGroupAsync(Context.ConnectionId, "mi"/*connection.ChatRoom*/);
-
 			await Clients
-				.Group("mi"/*connection.ChatRoom*/)
+				.All
 				.ReceiveMessage("Admin", $"{user.Name} покинул чат");
 		}
 
