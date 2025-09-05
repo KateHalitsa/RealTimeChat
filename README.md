@@ -40,4 +40,6 @@ To run this application locally:
 
    * Access the application at `http://localhost:3000`.
    
-  
+  ## Chat User Interface
+
+  ![Chart](image/Chart.png)
