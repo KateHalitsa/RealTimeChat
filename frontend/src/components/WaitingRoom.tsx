@@ -20,24 +20,24 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({ joinChat, error }) => 
 			onSubmit={onSubmit}
 			className="max-w-sm w-full bg-white p-8 rounded shadow-lg"
 		>
-			<Heading size="lg">Онлайн чат</Heading>
+			<Heading size="lg">Online chat</Heading>
 			{error &&
 				<div className="mb-4 text-red-600 font-semibold">
-					Ошибка: {error}
+					Error: {error}
 				</div>
 			}
 			<div className="mb-4">
-				<Text fontSize={"sm"}>Имя пользователя</Text>
+				<Text fontSize={"sm"}>User name</Text>
 				<Input
 					name="username"
-					placeholder="Введите ваше имя"
+					placeholder="Enter your name"
 					value={userName}
 					onChange={(e) => setUserName(e.target.value)}
 				/>
 			</div>
 
 			<Button type="submit" colorScheme="blue">
-				Присоединиться
+				Join
 			</Button>
 		</form>
 	);

@@ -60,10 +60,10 @@ export const Chat: React.FC<ChatProps> = ({
 						type="text"
 						value={message}
 						onChange={(e) => setMessage(e.target.value)}
-						placeholder="Введите сообщение"
+						placeholder="Enter your message"
 					/>
 					<Button colorScheme="blue" onClick={onSendMessage}>
-						Отправить
+						Send
 					</Button>
 				</div>
 			</div>

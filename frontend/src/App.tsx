@@ -48,7 +48,7 @@ const App: React.FC = () => {
 			setCurrentUserName(userName);
 			setError(null);  // Очистить ошибку, если соединение успешно
 		} catch (error: any) {
-			console.error("Ошибка при подключении:", error);
+			console.error("Error while connecting:", error);
 			// error.message содержит текст HubException
 			setError(error.message || String(error));
 		}
@@ -88,7 +88,7 @@ const App: React.FC = () => {
 		if (loginStartedRef.current) return; // если уже стартовали — не запускаем снова
 		loginStartedRef.current = true;
 		
-		console.log("Компонент смонтирован");
+		console.log("The component is mounted");
 
 		var curUserName = getCurrentUserName();
 		if ((!connection) && (curUserName != "")){
@@ -107,7 +107,7 @@ const App: React.FC = () => {
 				connection.stop();
 				setConnection(null);
 			}
-			console.log("Компонент размонтирован");
+			console.log("The component is unmounted.");
 		};
 	}, []); // пустой массив зависимостей → вызов один раз
 

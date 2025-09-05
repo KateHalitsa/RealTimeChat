@@ -65,7 +65,7 @@ public class ChatHub : Hub<IChatClient>
 
         await Clients
 			.All 
-            .ReceiveMessage("Admin", $"{connection.UserName} присоединился к чату");
+            .ReceiveMessage("Admin", $"{connection.UserName} joined the chat");
 
 		await SendUserList();
 
@@ -90,7 +90,7 @@ public class ChatHub : Hub<IChatClient>
 		{
 			await Clients
 				.All
-				.ReceiveMessage("Admin", $"{user.Name} покинул чат");
+				.ReceiveMessage("Admin", $"{user.Name} left the chat");
 		}
 
 		await SendUserList();
@@ -128,7 +128,7 @@ public class ChatHub : Hub<IChatClient>
 			if ((user.ExitTime == default(DateTime)) && ((now - lastHeartbeat).TotalSeconds > 30))
 			{
 				// Завершаем соединение
-				await hubContext.Clients.Client(connectionId).SendAsync("ConnectionTimeout", "Вы были отключены из-за неактивности.");
+				await hubContext.Clients.Client(connectionId).SendAsync("ConnectionTimeout", "You have been disconnected due to inactivity.");
 
 				// Здесь можно прервать соединение с сервера (требует рефлексии или кастомного решения)
 				// Например, если у вас есть доступ к IHubContext, можно вызвать Abort через Middleware или др.
