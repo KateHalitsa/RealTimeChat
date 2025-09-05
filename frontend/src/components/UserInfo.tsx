@@ -63,10 +63,10 @@ const UserInfo: React.FC<UserInfoProps> = ({users}) => {
     };
 
     return (
-        <div>
-            <ul >
+        <div className='text-lg'>
+            <ul>
                 {users.map((user, index) => (
-                    <li key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                    <li key={index} className='p-2'style={{ display: 'flex', alignItems: 'center' }}>
                         <span
                             className={`w-3 h-3 rounded-full ${getStatusColor(user.exitTime)}`}
                             title={getStatusColor(user.exitTime) === 'bg-green-500' ? 'Online' : 'Offline'}

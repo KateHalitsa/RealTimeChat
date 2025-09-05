@@ -29,11 +29,13 @@ export const Chat: React.FC<ChatProps> = ({
 	};
 
 	return (
-		<div className=" flex gap-4 p-2 bg-gray-100 rounded shadow-lg max-w-1xl mx-auto">
+		<div className="w-full flex gap-4 p-2 bg-gray-100 rounded shadow-lg max-w-1xl mx-auto">
 			{/* Боковая панель Пользователи слева */}
-			<div className="w-1/4 bg-white p-4 rounded shadow-md">
+			<div className="w-1/4 bg-white p-8 rounded shadow-md">
+				<div className=" justify-between mb-5">
 				<Heading size="lg">Users</Heading>
 				<UserInfo users={users}/>
+				</div>
 			</div>
 
 			{/* Основной чат справа */}
